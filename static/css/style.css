@@ -1,0 +1,595 @@
+/* ── Google Fonts ───────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+
+/* ── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Variables ──────────────────────────────────────────── */
+:root {
+    --bg: #04040f;
+    --surface: rgba(10, 10, 30, 0.85);
+    --neon-pink: #ff2d6d;
+    --neon-blue: #00d4ff;
+    --neon-purple: #a855f7;
+    --text: #e8eaf6;
+    --muted: #5a6a8a;
+    --radius: 4px;
+    --glow-pink: 0 0 20px rgba(255, 45, 109, 0.5);
+    --glow-blue: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+/* ── Body ───────────────────────────────────────────────── */
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ── Parallax Background ────────────────────────────────── */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 80%, rgba(255, 45, 109, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Page Wrapper (centrage universel) ──────────────────── */
+.page-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+}
+
+/* ── Formes géométriques parallax ───────────────────────── */
+.geo-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.geo-layer .shape {
+    position: absolute;
+    border: 1px solid;
+    opacity: 0.12;
+}
+
+.shape-1 {
+    width: 300px; height: 300px;
+    border-color: var(--neon-blue);
+    top: -100px; left: -80px;
+    transform: rotate(20deg);
+    animation: float1 25s linear infinite;
+}
+.shape-2 {
+    width: 200px; height: 200px;
+    border-color: var(--neon-pink);
+    top: 60%; right: -60px;
+    transform: rotate(45deg);
+    animation: float2 18s linear infinite;
+}
+.shape-3 {
+    width: 150px; height: 150px;
+    border-color: var(--neon-purple);
+    bottom: 10%; left: 10%;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border: none;
+    background: rgba(168, 85, 247, 0.06);
+    animation: float3 22s linear infinite;
+}
+.shape-4 {
+    width: 80px; height: 80px;
+    border-color: var(--neon-blue);
+    top: 30%; right: 15%;
+    transform: rotate(15deg);
+    animation: float1 14s linear infinite;
+    opacity: 0.18;
+}
+.shape-5 {
+    width: 400px; height: 400px;
+    border-color: var(--neon-pink);
+    bottom: -150px; right: -100px;
+    transform: rotate(30deg);
+    animation: float2 30s linear infinite;
+    opacity: 0.06;
+}
+.shape-6 {
+    width: 60px; height: 60px;
+    top: 15%; left: 25%;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    border: none;
+    background: rgba(0, 212, 255, 0.08);
+    animation: float3 16s linear infinite;
+}
+
+.geo-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
+
+@keyframes float1 {
+    0%   { transform: rotate(20deg) translateY(0px); }
+    50%  { transform: rotate(25deg) translateY(-30px); }
+    100% { transform: rotate(20deg) translateY(0px); }
+}
+@keyframes float2 {
+    0%   { transform: rotate(45deg) translateX(0px); }
+    50%  { transform: rotate(40deg) translateX(20px); }
+    100% { transform: rotate(45deg) translateX(0px); }
+}
+@keyframes float3 {
+    0%   { transform: translateY(0px) scale(1); }
+    50%  { transform: translateY(-20px) scale(1.05); }
+    100% { transform: translateY(0px) scale(1); }
+}
+
+/* ── Container ──────────────────────────────────────────── */
+.container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 580px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    background: var(--surface);
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+        0 0 40px rgba(0, 212, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-pink), transparent);
+}
+
+/* ── Typographie ────────────────────────────────────────── */
+h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+}
+
+/* ── Filtres ────────────────────────────────────────────── */
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    text-align: left;
+    flex: 1;
+    min-width: 140px;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
+    color: var(--neon-blue);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'Orbitron', monospace;
+}
+
+select {
+    background: rgba(0, 0, 20, 0.8);
+    color: var(--text);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: var(--radius);
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--neon-blue);
+    box-shadow: var(--glow-blue);
+}
+
+/* ── Boutons ────────────────────────────────────────────── */
+.btn-play, .btn-submit, .btn-next {
+    position: relative;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--neon-pink);
+    border-radius: var(--radius);
+    padding: 0.75rem 2.5rem;
+    font-size: 1rem;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.btn-play::before, .btn-submit::before, .btn-next::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 45, 109, 0.15), rgba(0, 212, 255, 0.15));
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.btn-play:hover, .btn-submit:hover, .btn-next:hover {
+    border-color: var(--neon-blue);
+    box-shadow: var(--glow-pink), var(--glow-blue);
+    color: white;
+}
+
+.btn-play:hover::before, .btn-submit:hover::before, .btn-next:hover::before {
+    opacity: 1;
+}
+
+.btn-home {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    font-family: 'Orbitron', monospace;
+}
+
+.btn-home:hover { color: var(--neon-blue); }
+
+/* ── Timer ──────────────────────────────────────────────── */
+.timer {
+    font-family: 'Orbitron', monospace;
+    font-size: 5rem;
+    font-weight: 900;
+    color: var(--neon-blue);
+    text-shadow: var(--glow-blue);
+    margin: 1.5rem 0 0.5rem;
+    line-height: 1;
+    transition: color 0.3s;
+}
+
+.timer.urgent {
+    color: var(--neon-pink);
+    text-shadow: var(--glow-pink);
+    animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 1; }
+    to   { opacity: 0.6; }
+}
+
+.timer-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+    transition: width 1s linear;
+    box-shadow: 0 0 10px var(--neon-blue);
+}
+
+/* ── Input réponse ──────────────────────────────────────── */
+.answer-zone {
+    display: flex;
+    gap: 0.5rem;
+}
+
+input[type="text"] {
+    flex: 1;
+    background: rgba(0, 0, 20, 0.8);
+    color: var(--text);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--neon-blue);
+    box-shadow: var(--glow-blue);
+}
+
+input[type="text"]:disabled { opacity: 0.5; }
+
+/* ── Vue Résultat ───────────────────────────────────────── */
+.result-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.result-verdict {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.correct-text { color: var(--neon-blue); text-shadow: var(--glow-blue); }
+.wrong-text   { color: var(--neon-pink); text-shadow: var(--glow-pink); }
+
+.illustration-large {
+    width: 100%;
+    max-width: 340px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: var(--glow-blue);
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.result-details {
+    width: 100%;
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    background: rgba(0, 0, 20, 0.5);
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.detail-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.detail-value {
+    font-size: 1rem;
+    color: var(--text);
+    text-align: right;
+}
+
+.result-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.btn-retour {
+    color: var(--muted);
+    text-decoration: none;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s, border-color 0.2s;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+}
+
+.btn-retour:hover { color: var(--neon-blue); border-color: rgba(0, 212, 255, 0.3); }
+
+/* ── Utilitaires ────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+    h1 { font-size: 1.3rem; }
+    .timer { font-size: 3.5rem; }
+    .container { padding: 1.5rem 1rem; }
+    .filters { flex-direction: column; }
+    .answer-zone { flex-direction: column; }
+    .btn-play, .btn-submit, .btn-next { width: 100%; }
+    .result-actions { flex-direction: column; }
+    .btn-retour { width: 100%; text-align: center; }
+}
+
+/* ── Bibliothèque ───────────────────────────────────────── */
+.bib-search {
+    margin-bottom: 1.2rem;
+}
+
+.bib-search input {
+    width: 100%;
+}
+
+.bib-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid rgba(0, 212, 255, 0.15);
+}
+
+.bib-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.bib-table th {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--neon-blue);
+    padding: 0.7rem 0.8rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    background: rgba(0, 0, 20, 0.6);
+    white-space: nowrap;
+}
+
+.bib-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    vertical-align: middle;
+}
+
+.bib-table tbody tr:hover {
+    background: rgba(0, 212, 255, 0.04);
+}
+
+.type-badge {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--neon-pink);
+    border: 1px solid rgba(255, 45, 109, 0.3);
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+    white-space: nowrap;
+}
+
+.btn-play-mini {
+    background: transparent;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--neon-blue);
+    border-radius: var(--radius);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.btn-play-mini:hover,
+.btn-play-mini.playing {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--neon-blue);
+    box-shadow: var(--glow-blue);
+}
+
+.bib-actions {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+/* Boutons côte à côte sur index */
+.btn-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.btn-secondary {
+    position: relative;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    border-radius: var(--radius);
+    padding: 0.75rem 2.5rem;
+    font-size: 1rem;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.btn-secondary:hover {
+    border-color: var(--neon-blue);
+    box-shadow: var(--glow-blue);
+    color: white;
+}
+
+.project-note {
+    margin-top: 1.5rem;
+    font-size: 0.90rem;
+    color: var(--text);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+}
+
+.project-note a {
+    color: var(--neon-blue);
+    transition: opacity 0.2s;
+}
+
+.project-note a:hover { opacity: 0.7; }
+
+@media (max-width: 480px) {
+    .btn-group { flex-direction: column; }
+    .btn-secondary { width: 100%; text-align: center; }
+}

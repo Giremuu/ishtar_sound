@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishtar Sound</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="geo-layer">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+        <div class="shape shape-6"></div>
+    </div>
+
+    <div class="page-wrapper">
+        <div class="container">
+            <h1>Ishtar Sound</h1>
+            <p class="subtitle">Blindtest — Anime &amp; Jeux</p>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="type">Type</label>
+                    <select id="type">
+                        <option value="">Tous</option>
+                        {% for t in types %}
+                        <option value="{{ t['id_type'] }}">{{ t['type'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-play" onclick="startBlindtest()">Lancer</button>
+                <a href="/bibliotheque" class="btn-secondary">Bibliothèque</a>
+            </div>
+
+            <p class="project-note">Projet personnel à but non lucratif — Aucune publicité, Aucun gain financier </br>
+                <a href="https://github.com/Giremuu" target="_blank" rel="noopener">Mon GitHub - @Giremuu</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function startBlindtest() {
+            const type = document.getElementById("type").value;
+            let url = "/blindtest?";
+            if (type) url += `type_id=${type}`;
+            window.location.href = url;
+        }
+
+        document.addEventListener("mousemove", (e) => {
+            const shapes = document.querySelectorAll(".shape");
+            const x = (e.clientX / window.innerWidth - 0.5) * 2;
+            const y = (e.clientY / window.innerHeight - 0.5) * 2;
+            shapes.forEach((s, i) => {
+                const depth = (i + 1) * 4;
+                s.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

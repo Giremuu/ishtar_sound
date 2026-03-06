@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishtar Sound — Bibliothèque</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="geo-layer">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+        <div class="shape shape-6"></div>
+    </div>
+
+    <div class="page-wrapper" style="align-items: flex-start; padding-top: 2rem;">
+        <div class="container" style="max-width: 800px;">
+            <h1>Bibliothèque</h1>
+            <p class="subtitle">{{ musiques|length }} titre(s) référencé(s)</p>
+
+            <div class="bib-search">
+                <input type="text" id="search" placeholder="Rechercher..." autocomplete="off" oninput="filterTable()">
+            </div>
+
+            <div class="bib-table-wrapper">
+                <table class="bib-table" id="bibTable">
+                    <thead>
+                        <tr>
+                            <th>Oeuvre</th>
+                            <th>Titre</th>
+                            <th>Type</th>
+                            <th>Artiste</th>
+                            <th>Date</th>
+                            <th>Écouter (30s)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in musiques %}
+                        <tr>
+                            <td>{{ m['titre_oeuvre'] }}</td>
+                            <td>{{ m['titre_musique'] }}</td>
+                            <td><span class="type-badge">{{ m['type'] }}</span></td>
+                            <td>{{ m['artistes'] or '—' }}</td>
+                            <td>{{ m['date'] or '—' }}</td>
+                            <td>
+                                <button class="btn-play-mini" data-src="{{ m['chemin_mp3'] }}" onclick="togglePlay(this)">▶</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <audio id="bib-player"></audio>
+
+            <div class="bib-actions">
+                <a href="/" class="btn-retour">← Retour</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBtn = null;
+        const player = document.getElementById("bib-player");
+
+        function togglePlay(btn) {
+            const src = btn.dataset.src;
+
+            if (currentBtn && currentBtn !== btn) {
+                currentBtn.textContent = "▶";
+                currentBtn.classList.remove("playing");
+            }
+
+            if (currentBtn === btn && !player.paused) {
+                player.pause();
+                btn.textContent = "▶";
+                btn.classList.remove("playing");
+                currentBtn = null;
+            } else {
+                player.src = src;
+                player.play();
+                btn.textContent = "⏸";
+                btn.classList.add("playing");
+                currentBtn = btn;
+            }
+        }
+
+        player.addEventListener("ended", () => {
+            if (currentBtn) {
+                currentBtn.textContent = "▶";
+                currentBtn.classList.remove("playing");
+                currentBtn = null;
+            }
+        });
+
+        function filterTable() {
+            const query = document.getElementById("search").value.toLowerCase();
+            const rows = document.querySelectorAll("#bibTable tbody tr");
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? "" : "none";
+            });
+        }
+
+        document.addEventListener("mousemove", (e) => {
+            const shapes = document.querySelectorAll(".shape");
+            const x = (e.clientX / window.innerWidth - 0.5) * 2;
+            const y = (e.clientY / window.innerHeight - 0.5) * 2;
+            shapes.forEach((s, i) => {
+                const depth = (i + 1) * 4;
+                s.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

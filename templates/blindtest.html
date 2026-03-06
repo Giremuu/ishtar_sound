@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishtar Sound — Blindtest</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="geo-layer">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+        <div class="shape shape-6"></div>
+    </div>
+
+    <div class="page-wrapper">
+        <!-- Vue jeu -->
+        <div class="container" id="viewGame">
+            <h1>Ishtar Sound</h1>
+            <div class="timer" id="timer">25</div>
+            <div class="timer-bar">
+                <div class="timer-fill" id="timerFill"></div>
+            </div>
+            <audio id="player" preload="auto"></audio>
+            <div class="answer-zone">
+                <input type="text" id="reponse" placeholder="Titre, oeuvre ou artiste..." autocomplete="off">
+                <button class="btn-submit" onclick="submitReponse()">OK</button>
+            </div>
+        </div>
+
+        <!-- Vue résultat -->
+        <div class="container result-container hidden" id="viewResult">
+            <div class="result-verdict" id="resultVerdict"></div>
+            <img id="illustration" class="hidden illustration-large" alt="Illustration">
+            <div class="result-details" id="resultDetails"></div>
+            <div class="result-actions">
+                <button class="btn-next" onclick="loadMusique()">Suivant ➜</button>
+                <a href="/" class="btn-retour">← Retour</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function esc(str) {
+            const d = document.createElement("div");
+            d.textContent = str ?? "—";
+            return d.innerHTML;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const typeId = params.get("type_id") || "";
+        const oeuvreId = params.get("oeuvre_id") || "";
+
+        let currentMusique = null;
+        let timerInterval = null;
+        const DUREE = 25;
+
+        async function loadMusique() {
+            document.getElementById("viewGame").classList.remove("hidden");
+            document.getElementById("viewResult").classList.add("hidden");
+            document.getElementById("reponse").value = "";
+            document.getElementById("reponse").disabled = false;
+            document.getElementById("timer").classList.remove("urgent");
+            document.getElementById("reponse").focus();
+
+            let url = `/api/random?`;
+            if (typeId) url += `type_id=${typeId}&`;
+            if (oeuvreId) url += `oeuvre_id=${oeuvreId}`;
+
+            const res = await fetch(url);
+            if (!res.ok) {
+                document.getElementById("viewGame").classList.add("hidden");
+                document.getElementById("viewResult").classList.remove("hidden");
+                document.getElementById("resultVerdict").innerHTML = `<span class="wrong-text">Aucune musique trouvée</span>`;
+                document.getElementById("resultDetails").innerHTML = "";
+                document.getElementById("illustration").classList.add("hidden");
+                return;
+            }
+
+            currentMusique = await res.json();
+            const player = document.getElementById("player");
+            player.src = currentMusique.mp3;
+            player.play();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            let secondes = DUREE;
+            const timerEl = document.getElementById("timer");
+            timerEl.textContent = secondes;
+            document.getElementById("timerFill").style.width = "100%";
+
+            timerInterval = setInterval(() => {
+                secondes--;
+                timerEl.textContent = secondes;
+                document.getElementById("timerFill").style.width = `${(secondes / DUREE) * 100}%`;
+                if (secondes <= 5) timerEl.classList.add("urgent");
+                if (secondes <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("player").pause();
+                    showResult(false, null);
+                }
+            }, 1000);
+        }
+
+        async function submitReponse() {
+            if (!currentMusique) return;
+            clearInterval(timerInterval);
+            document.getElementById("player").pause();
+            document.getElementById("reponse").disabled = true;
+
+            const reponse = document.getElementById("reponse").value.trim();
+            const res = await fetch("/api/check", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_musique: currentMusique.id, reponse })
+            });
+
+            const data = await res.json();
+            showResult(data.correct, data);
+        }
+
+        function showResult(correct, data) {
+            document.getElementById("viewGame").classList.add("hidden");
+            document.getElementById("viewResult").classList.remove("hidden");
+
+            const verdict = document.getElementById("resultVerdict");
+            const details = document.getElementById("resultDetails");
+            const img = document.getElementById("illustration");
+
+            if (!data) {
+                verdict.innerHTML = `<span class="wrong-text">⏱ Temps écoulé</span>`;
+            } else {
+                verdict.innerHTML = correct
+                    ? `<span class="correct-text">✅ Bonne réponse !</span>`
+                    : `<span class="wrong-text">❌ Raté !</span>`;
+            }
+
+            if (currentMusique && currentMusique.illustration) {
+                img.src = currentMusique.illustration;
+                img.classList.remove("hidden");
+            } else {
+                img.classList.add("hidden");
+            }
+
+            const compositeurs = data && data.compositeurs && data.compositeurs.length > 0
+                ? data.compositeurs.join(", ") : "Inconnu";
+            const date = data && data.date ? data.date : "—";
+            const oeuvre = data ? data.titre_oeuvre : currentMusique.oeuvre;
+            const titre = data ? data.titre_musique : currentMusique.titre;
+
+            details.innerHTML = `
+                <div class="detail-row"><span class="detail-label">Oeuvre</span><span class="detail-value">${esc(oeuvre)}</span></div>
+                <div class="detail-row"><span class="detail-label">Titre</span><span class="detail-value">${esc(titre)}</span></div>
+                <div class="detail-row"><span class="detail-label">Artiste</span><span class="detail-value">${esc(compositeurs)}</span></div>
+                <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${esc(date)}</span></div>
+            `;
+        }
+
+        document.getElementById("reponse").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") submitReponse();
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            const shapes = document.querySelectorAll(".shape");
+            const x = (e.clientX / window.innerWidth - 0.5) * 2;
+            const y = (e.clientY / window.innerHeight - 0.5) * 2;
+            shapes.forEach((s, i) => {
+                const depth = (i + 1) * 4;
+                s.style.transform = `translate(${x * depth}px, ${y * depth}px)`;
+            });
+        });
+
+        loadMusique();
+    </script>
+</body>
+</html>

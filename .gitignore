@@ -1,0 +1,36 @@
+# ── Environnement Python ────────────────────────
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── Variables d'environnement ────────────────────
+.env
+.env.*
+
+# ── Base de données locale ───────────────────────
+*.db
+*.sqlite
+*.sqlite3
+BDD/
+
+# ── Fichiers audio et images locaux ─────────────
+static/musiques/
+static/illustrations/
+
+# ── Logs ─────────────────────────────────────────
+*.log
+logs/
+output/
+
+# ── OS ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
