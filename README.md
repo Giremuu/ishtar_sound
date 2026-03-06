@@ -88,6 +88,60 @@ https://NOM_BUCKET.s3.REGION.amazonaws.com/musiques/fichier.mp3
 https://NOM_BUCKET.s3.REGION.amazonaws.com/illustrations/fichier.jpg
 ```
 
+## HTTPS
+
+Le domaine `ishtar-sound.fr` a été acheté via OVH
+Pour associer le domaine à l'instance EC2, deux enregistrements DNS de type **A** ont été modifiés dans la zone DNS OVH :
+
+| Entrée | Cible |
+|---|---|
+| `ishtar-sound.fr` | IP publique EC2 |
+| `www.ishtar-sound.fr` | IP publique EC2 |
+
+
+### Certificat HTTPS avec Certbot & Let's Encrypt
+
+Une fois la propagation DNS confirmée, un certificat SSL a été généré automatiquement via **Certbot** avec le plugin Nginx :
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d ishtar-sound.fr -d www.ishtar-sound.fr
+```
+
+Certbot a automatiquement :
+- obtenu un certificat Let's Encrypt valide
+- modifié la configuration Nginx pour activer HTTPS sur le port 443
+- mis en place une redirection HTTP → HTTPS
+
+Le renouvellement du certificat est géré automatiquement par Certbot (validité 90 jours, renouvellement automatique).
+
+### Configuration Nginx
+
+Le fichier `/etc/nginx/sites-available/default` contient la configuration finale générée par Certbot, avec le bloc proxy vers l'application Flask :
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name ishtar-sound.fr www.ishtar-sound.fr;
+
+    ssl_certificate /etc/letsencrypt/live/ishtar-sound.fr/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/ishtar-sound.fr/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+server {
+    listen 80;
+    server_name ishtar-sound.fr www.ishtar-sound.fr;
+    return 301 https://$host$request_uri;
+}
+```
+
 ## V1 :
 - 24 sons réparti équitablement dans chaque type
 - Extrait audio de 30 secondes max
+- L'auto-play sur Firefox est désactivé de base (règle de sécurité par défaut de Firefox)
