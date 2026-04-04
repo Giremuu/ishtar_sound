@@ -46,7 +46,7 @@
                             <td>{{ m['artistes'] or '—' }}</td>
                             <td>{{ m['date'] or '—' }}</td>
                             <td>
-                                <button class="btn-play-mini" data-src="{{ m['chemin_mp3'] }}" onclick="togglePlay(this)">▶</button>
+                                <button class="btn-play-mini" data-id="{{ m['id_musique'] }}" onclick="togglePlay(this)">▶</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -66,9 +66,7 @@
         let currentBtn = null;
         const player = document.getElementById("bib-player");
 
-        function togglePlay(btn) {
-            const src = btn.dataset.src;
-
+        async function togglePlay(btn) {
             if (currentBtn && currentBtn !== btn) {
                 currentBtn.textContent = "▶";
                 currentBtn.classList.remove("playing");
@@ -79,12 +77,25 @@
                 btn.textContent = "▶";
                 btn.classList.remove("playing");
                 currentBtn = null;
-            } else {
-                player.src = src;
+                return;
+            }
+
+            // Récupère une pre-signed URL fraîche à chaque lecture
+            const id = btn.dataset.id;
+            btn.textContent = "…";
+            btn.disabled = true;
+            try {
+                const res = await fetch(`/api/play/${id}`);
+                const data = await res.json();
+                player.src = data.url;
                 player.play();
                 btn.textContent = "⏸";
                 btn.classList.add("playing");
                 currentBtn = btn;
+            } catch {
+                btn.textContent = "▶";
+            } finally {
+                btn.disabled = false;
             }
         }
 

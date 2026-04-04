@@ -1,6 +1,7 @@
 import random
 from flask import Blueprint, jsonify, render_template, request
 from database import get_db
+from config import presign_url
 
 blindtest_bp = Blueprint("blindtest", __name__)
 
@@ -53,9 +54,21 @@ def random_musique():
         "oeuvre": musique["titre_oeuvre"],
         "type": musique["type"],
         "date": musique["date"],
-        "mp3": musique["chemin_mp3"],
-        "illustration": illustration["image"] if illustration else None,
+        "mp3": presign_url(musique["chemin_mp3"], expiry=90),
+        "illustration": presign_url(illustration["image"], expiry=90) if illustration else None,
     })
+
+
+@blindtest_bp.route("/api/play/<int:id_musique>")
+def play_musique(id_musique):
+    """Retourne une pre-signed URL valable 60 s pour écouter un extrait en bibliothèque."""
+    db = get_db()
+    row = db.execute(
+        "SELECT chemin_mp3 FROM Musique WHERE id_musique = ?", (id_musique,)
+    ).fetchone()
+    if not row:
+        return jsonify({"error": "Musique introuvable"}), 404
+    return jsonify({"url": presign_url(row["chemin_mp3"], expiry=60)})
 
 
 @blindtest_bp.route("/api/check", methods=["POST"])
