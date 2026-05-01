@@ -1,74 +1,50 @@
-# Ishtar Sound — Blindtest musical
+# ishtar_sound
 
-Application web de blindtest musical orientée anime et jeux vidéo, développée avec Flask et déployée sur AWS.
+![Version](https://img.shields.io/badge/version-V1-purple)
+![License](https://img.shields.io/badge/license-MIT-yellow)
+![Stack](https://img.shields.io/badge/stack-Flask%20%7C%20Python%20%7C%20AWS-lightgrey)
 
-## Stack technique
+Music blindtest web app focused on anime and video game soundtracks. Built with Flask and deployed on AWS. Players have 25 seconds to guess the track - by title, work, or artist.
 
-- **Backend** : Python 3 / Flask
-- **Frontend** : HTML / CSS / JS vanilla
-- **Base de données** : SQLite
-- **Serveur** : Gunicorn + Nginx
-- **Stockage fichiers** : AWS S3 (bucket privé)
-- **Hébergement** : AWS EC2 (t3.micro)
+---
 
-## Fonctionnalités
-
-- Blindtest avec timer de 25 secondes
-- Filtres par type (Opening, Ending, OST, Jeu)
-- Vérification de réponse flexible (titre, oeuvre ou artiste)
-- Bibliothèque des musiques disponibles avec lecture à la demande
-- API d'administration sécurisée par token
-
-## Sécurité
-
-- **Bucket S3 privé** : aucun fichier accessible directement, pas de risque de cost exploit
-- **Pre-signed URLs** : Flask génère des URLs S3 temporaires (60–90 secondes) à chaque requête via boto3
-- **IAM rôle EC2** : pas de clés d'accès AWS dans le code ou les variables d'environnement
-- **Requêtes paramétrées** : protection contre les injections SQL
-- **Rate limiting** : Flask-Limiter sur toutes les routes publiques
-- **HTTPS** : certificat Let's Encrypt avec renouvellement automatique
-
-## Architecture
-
-### Infrastructure
+## Overview
 
 ```mermaid
 graph LR
-    U[Utilisateur] --> N[Nginx\nPort 443 HTTPS]
-    N --> G[Gunicorn\n127.0.0.1:5000]
-    G --> F[Flask]
-    F --> DB[(SQLite)]
-    F --> S3[(AWS S3\nBucket privé)]
+    U["User"] --> N["Nginx - Port 443 HTTPS"]
+    N --> G["Gunicorn - 127.0.0.1:5000"]
+    G --> F["Flask"]
+    F --> DB[("SQLite")]
+    F --> S3[("AWS S3 - Private bucket")]
 ```
 
-### Flux pre-signed URL
+### Pre-signed URL flow
 
 ```mermaid
 sequenceDiagram
     participant C as Client
     participant F as Flask
     participant S3 as AWS S3
-
     C->>F: GET /api/random
-    F->>F: Requête SQLite
-    F->>S3: generate_presigned_url() via IAM rôle
-    S3-->>F: URL signée (90s)
-    F-->>C: JSON { mp3: URL signée }
-    C->>S3: GET URL signée (direct)
-    S3-->>C: Fichier MP3
-    Note over C,S3: URL expirée après 90s
+    F->>F: SQLite query
+    F->>S3: generate_presigned_url() via IAM role
+    S3-->>F: Signed URL (90s)
+    F-->>C: JSON with signed MP3 URL
+    C->>S3: GET signed URL (direct)
+    S3-->>C: MP3 file
+    note over C,S3: URL expires after 90s
 ```
 
-### Schéma BDD
+### Database schema
 
 ```mermaid
 erDiagram
-    Oeuvre ||--o{ Musique : contient
-    Type ||--o{ Musique : categorise
-    Musique ||--o{ Illustration : possede
+    Oeuvre ||--o{ Musique : contains
+    Type ||--o{ Musique : categorizes
+    Musique ||--o{ Illustration : has
     Musique ||--o{ Creer : ""
     Compositeur ||--o{ Creer : ""
-
     Oeuvre {
         int id_oeuvre
         string titre_oeuvre
@@ -98,16 +74,16 @@ erDiagram
     }
 ```
 
-## Structure
+### Project structure
 
 ```
 ishtar_sound/
-├── app.py              # Point d'entrée Flask
-├── config.py           # Configuration + client S3 + presign_url()
-├── database.py         # Connexion SQLite
+├── app.py              - Flask entry point
+├── config.py           - Config + S3 client + presign_url()
+├── database.py         - SQLite connection
 ├── routes/
-│   ├── blindtest.py    # Routes publiques + API
-│   └── admin.py        # Routes d'administration
+│   ├── blindtest.py    - Public routes and API
+│   └── admin.py        - Admin routes
 ├── templates/
 │   ├── index.html
 │   ├── blindtest.html
@@ -117,84 +93,74 @@ ishtar_sound/
 └── requirements.txt
 ```
 
-## API publique
+---
 
-| Méthode | Route | Description |
-|---------|-------|-------------|
-| GET | `/` | Page d'accueil |
-| GET | `/blindtest` | Page de jeu |
-| GET | `/api/random?type_id=X` | Musique aléatoire (pre-signed URL incluse) |
-| POST | `/api/check` | Vérification de réponse |
-| GET | `/api/play/<id>` | Pre-signed URL pour lecture en bibliothèque |
-| GET | `/bibliotheque` | Bibliothèque des musiques |
+## Usage
 
-## API d'administration
+### Prerequisites
 
-Toutes les routes `/admin/*` nécessitent le header `X-Admin-Token`.
+- Python 3
+- An AWS account with an S3 bucket and an EC2 IAM role
 
-| Méthode | Route | Description |
-|---------|-------|-------------|
-| POST | `/admin/oeuvre` | Ajouter une oeuvre |
-| POST | `/admin/compositeur` | Ajouter un compositeur |
-| POST | `/admin/musique` | Ajouter une musique |
-| POST | `/admin/creer` | Lier musique ↔ compositeur |
-| POST | `/admin/illustration` | Ajouter une illustration |
-| GET | `/admin/musiques` | Lister toutes les musiques |
-
-
-## Déploiement AWS
-
-### S3
-
-Les fichiers MP3 et illustrations sont hébergés sur un bucket S3 **privé**. Les URLs complètes sont stockées en base (`chemin_mp3`, `image`). Flask génère des pre-signed URLs temporaires à chaque requête via boto3 — les fichiers ne sont jamais exposés directement.
-
-L'EC2 accède à S3 via un **rôle IAM** attaché à l'instance (pas de clés d'accès).
-
-### HTTPS
-
-Le domaine `ishtar-sound.fr` est enregistré sur OVH. Deux enregistrements DNS de type **A** pointent vers l'IP publique de l'EC2 :
-
-| Entrée | Cible |
-|---|---|
-| `ishtar-sound.fr` | IP publique EC2 |
-| `www.ishtar-sound.fr` | IP publique EC2 |
-
-Certificat SSL généré via **Certbot** :
+### Run locally
 
 ```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d ishtar-sound.fr -d www.ishtar-sound.fr
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy and fill the environment file
+cp .env-exemple .env
+
+# Run
+python app.py
 ```
 
-Renouvellement automatique (validité de 90 jours).
+---
 
-### Configuration Nginx
+## Specificities
 
-```nginx
-server {
-    listen 443 ssl;
-    server_name ishtar-sound.fr www.ishtar-sound.fr;
+### Features
 
-    ssl_certificate /etc/letsencrypt/live/ishtar-sound.fr/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/ishtar-sound.fr/privkey.pem;
+- 25-second timer per track
+- Filters by type (Opening, Ending, OST, Game)
+- Flexible answer check - title, work, or artist accepted
+- Music library with on-demand playback
+- Admin API secured by token
 
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
+### Security
 
-server {
-    listen 80;
-    server_name ishtar-sound.fr www.ishtar-sound.fr;
-    return 301 https://$host$request_uri;
-}
-```
+- **Private S3 bucket** - no file is directly accessible, no cost exploit risk
+- **Pre-signed URLs** - Flask generates temporary S3 URLs (60-90 seconds) per request via boto3
+- **EC2 IAM role** - no AWS access keys in code or environment variables
+- **Parameterized queries** - SQL injection protection
+- **Rate limiting** - Flask-Limiter on all public routes (200 req/hour)
+- **HTTPS** - Let's Encrypt certificate with automatic renewal
 
-## Variables d'environnement
+### Public API
 
-Un fichier `.env` chiffré et secret contient mes valeurs importantes :
+| Method | Route | Description |
+|---|---|---|
+| GET | `/` | Home page |
+| GET | `/blindtest` | Game page |
+| GET | `/api/random?type_id=X` | Random track with pre-signed URL |
+| POST | `/api/check` | Answer check |
+| GET | `/api/play/<id>` | Pre-signed URL for library playback |
+| GET | `/bibliotheque` | Music library |
+
+### Admin API
+
+All `/admin/*` routes require the `X-Admin-Token` header.
+
+| Method | Route | Description |
+|---|---|---|
+| POST | `/admin/oeuvre` | Add a work |
+| POST | `/admin/compositeur` | Add a composer |
+| POST | `/admin/musique` | Add a track |
+| POST | `/admin/creer` | Link track to composer |
+| POST | `/admin/illustration` | Add an illustration |
+| GET | `/admin/musiques` | List all tracks |
+
+### Environment variables
 
 ```
 SECRET_KEY=
@@ -205,10 +171,27 @@ S3_REGION=eu-west-3
 DEBUG=false
 ```
 
-## Versions
+### AWS deployment
 
-### v1.0
-- 27 sons répartis par type (Opening, Ending, OST, Jeu)
-- Extrait audio de 25 secondes
-- Bucket S3 privé avec pre-signed URLs
-- Rate limiting 200 req/heure
+MP3 files and illustrations are hosted on a **private S3 bucket**. Full URLs are stored in the database. Flask generates temporary pre-signed URLs per request via boto3 - files are never exposed directly.
+
+The EC2 instance accesses S3 through an **IAM role** attached to the instance, no access keys involved.
+
+HTTPS is handled by **Nginx** with a **Certbot** certificate on `ishtar-sound.fr`, auto-renewed every 90 days.
+
+### Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3 / Flask |
+| Frontend | HTML / CSS / Vanilla JS |
+| Database | SQLite |
+| Server | Gunicorn + Nginx |
+| File storage | AWS S3 (private bucket) |
+| Hosting | AWS EC2 (t3.micro) |
+
+---
+
+## License
+
+MIT
